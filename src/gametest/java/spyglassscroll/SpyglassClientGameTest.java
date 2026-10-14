@@ -31,17 +31,24 @@ public final class SpyglassClientGameTest implements FabricClientGameTest {
             context.getInput().scroll(2);
             settle(context);
             checkFov(context, defaultFov / 1.5625F);
+            checkSensitivity(context, 1 / 1.5625);
             context.runOnClient(client -> check(client.player.getInventory().getSelectedSlot() == 0, "Scoped scroll keeps the selected hotbar slot"));
             context.getInput().scroll(-2);
             settle(context);
             checkFov(context, defaultFov);
+            checkSensitivity(context, 1.0);
             context.getInput().scroll(100);
             settle(context);
             checkFov(context, defaultFov / 5.0F);
+            checkSensitivity(context, 0.2);
             context.takeScreenshot("spyglass-maximum");
             context.getInput().scroll(-100);
             settle(context);
             checkFov(context, defaultFov * 5.0F);
+            checkSensitivity(context, 5.0);
+            context.runOnClient(client -> client.options.smoothCamera = true);
+            checkSensitivity(context, 1.0);
+            context.runOnClient(client -> client.options.smoothCamera = false);
 
             context.setScreen(() -> new InventoryScreen(Minecraft.getInstance().player));
             context.getInput().scroll(2);
@@ -73,6 +80,7 @@ public final class SpyglassClientGameTest implements FabricClientGameTest {
             context.getInput().scroll(1);
             settle(context);
             checkFov(context, defaultFov / 1.25F);
+            checkSensitivity(context, 0.8);
             context.runOnClient(client -> check(client.player.getInventory().getSelectedSlot() == 1, "Offhand spyglass scroll keeps the selected hotbar slot"));
             context.getInput().releaseMouse(InputConstants.MOUSE_BUTTON_RIGHT);
         }
@@ -88,6 +96,13 @@ public final class SpyglassClientGameTest implements FabricClientGameTest {
         context.runOnClient(client -> {
             float actual = client.gameRenderer.mainCamera().getFov();
             check(Math.abs(actual - expected) < 0.05F, "Expected FOV " + expected + ", got " + actual);
+        });
+    }
+
+    private static void checkSensitivity(ClientGameTestContext context, double expected) {
+        context.runOnClient(client -> {
+            double actual = SpyglassScroll.sensitivity();
+            check(Math.abs(actual - expected) < 1.0E-6, "Expected sensitivity " + expected + ", got " + actual);
         });
     }
 
