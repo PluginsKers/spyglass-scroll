@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "spyglass-scroll",
+  "version": "${version}",
+  "name": "Spyglass Scroll",
+  "description": "Scroll to zoom while looking through a spyglass.",
+  "authors": ["PluginsKers"],
+  "contact": {
+    "sources": "https://github.com/PluginsKers/spyglass-scroll",
+    "issues": "https://github.com/PluginsKers/spyglass-scroll/issues"
+  },
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": { "client": ["spyglassscroll.SpyglassScroll"] },
+  "mixins": [{ "config": "spyglass-scroll.client.mixins.json", "environment": "client" }],
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "fabric-api": "*",
+    "minecraft": "26.3.x",
+    "java": ">=25"
+  }
+}
