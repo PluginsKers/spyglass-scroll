@@ -1,0 +1,97 @@
+package spyglassscroll;
+
+import com.mojang.blaze3d.platform.InputConstants;
+import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
+import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+
+public final class SpyglassClientGameTest implements FabricClientGameTest {
+    @Override
+    public void runTest(ClientGameTestContext context) {
+        context.getInput().resizeWindow(1280, 720);
+        try (var world = context.worldBuilder().create()) {
+            world.getServer().runOnServer(server -> {
+                var player = world.getConnection().getServerPlayer();
+                player.getInventory().setItem(0, new ItemStack(Items.SPYGLASS));
+                player.getInventory().setItem(1, new ItemStack(Items.STONE));
+                player.getInventory().setSelectedSlot(0);
+                player.inventoryMenu.broadcastChanges();
+            });
+            world.getConnection().waitForClientboundPackets();
+            context.runOnClient(client -> client.player.getInventory().setSelectedSlot(0));
+            context.getInput().holdMouse(InputConstants.MOUSE_BUTTON_RIGHT);
+            context.waitFor(client -> client.player.isScoping());
+            settle(context);
+            float defaultFov = context.computeOnClient(client -> client.gameRenderer.mainCamera().getFov());
+            context.takeScreenshot("spyglass-default");
+            context.getInput().scroll(2);
+            settle(context);
+            checkFov(context, defaultFov / 1.5625F);
+            context.runOnClient(client -> check(client.player.getInventory().getSelectedSlot() == 0, "Scoped scroll keeps the selected hotbar slot"));
+            context.getInput().scroll(-2);
+            settle(context);
+            checkFov(context, defaultFov);
+            context.getInput().scroll(100);
+            settle(context);
+            checkFov(context, defaultFov / 5.0F);
+            context.takeScreenshot("spyglass-maximum");
+            context.getInput().scroll(-100);
+            settle(context);
+            checkFov(context, defaultFov * 5.0F);
+
+            context.setScreen(() -> new InventoryScreen(Minecraft.getInstance().player));
+            context.getInput().scroll(2);
+            context.runOnClient(client -> check(client.player.getInventory().getSelectedSlot() == 0, "Inventory scroll never changes the hotbar"));
+            context.setScreen(() -> null);
+            context.getInput().releaseMouse(InputConstants.MOUSE_BUTTON_RIGHT);
+            context.waitFor(client -> !client.player.isScoping());
+            settle(context);
+            context.runOnClient(client -> check(SpyglassScroll.zoom() == 1.0F, "Releasing the spyglass resets zoom"));
+            context.getInput().holdMouse(InputConstants.MOUSE_BUTTON_RIGHT);
+            context.waitFor(client -> client.player.isScoping());
+            settle(context);
+            checkFov(context, defaultFov);
+            context.getInput().releaseMouse(InputConstants.MOUSE_BUTTON_RIGHT);
+            context.waitFor(client -> !client.player.isScoping());
+            context.getInput().scroll(-1);
+            context.waitFor(client -> client.player.getInventory().getSelectedSlot() == 1);
+
+            world.getConnection().waitForServerboundPackets();
+            world.getServer().runOnServer(server -> {
+                var player = world.getConnection().getServerPlayer();
+                player.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.SPYGLASS));
+                player.getInventory().setItem(1, ItemStack.EMPTY);
+                player.inventoryMenu.broadcastChanges();
+            });
+            world.getConnection().waitForClientboundPackets();
+            context.getInput().holdMouse(InputConstants.MOUSE_BUTTON_RIGHT);
+            context.waitFor(client -> client.player.isScoping());
+            context.getInput().scroll(1);
+            settle(context);
+            checkFov(context, defaultFov / 1.25F);
+            context.runOnClient(client -> check(client.player.getInventory().getSelectedSlot() == 1, "Offhand spyglass scroll keeps the selected hotbar slot"));
+            context.getInput().releaseMouse(InputConstants.MOUSE_BUTTON_RIGHT);
+        }
+        context.waitTick();
+        context.runOnClient(client -> check(SpyglassScroll.zoom() == 1.0F, "Leaving a world clears zoom"));
+    }
+
+    private static void settle(ClientGameTestContext context) {
+        for (int i = 0; i < 20; i++) context.waitTick();
+    }
+
+    private static void checkFov(ClientGameTestContext context, float expected) {
+        context.runOnClient(client -> {
+            float actual = client.gameRenderer.mainCamera().getFov();
+            check(Math.abs(actual - expected) < 0.05F, "Expected FOV " + expected + ", got " + actual);
+        });
+    }
+
+    private static void check(boolean condition, String message) {
+        if (!condition) throw new AssertionError(message);
+    }
+}
