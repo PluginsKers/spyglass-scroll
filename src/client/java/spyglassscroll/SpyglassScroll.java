@@ -25,4 +25,10 @@ public final class SpyglassScroll implements ClientModInitializer {
     }
 
     public static float zoom() { return (float) zoom; }
+
+    public static double sensitivity() {
+        if (!isScoping()) return 1.0;
+        // Smooth camera skips vanilla's scoped slowdown, so it only slows down past the default magnification.
+        return 1.0 / (Minecraft.getInstance().options.smoothCamera ? Math.max(1.0, zoom) : zoom);
+    }
 }
