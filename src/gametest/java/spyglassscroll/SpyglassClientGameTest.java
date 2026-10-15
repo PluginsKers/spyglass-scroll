@@ -3,6 +3,7 @@ package spyglassscroll;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
+import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -16,7 +17,7 @@ public final class SpyglassClientGameTest implements FabricClientGameTest {
         context.getInput().resizeWindow(1280, 720);
         try (var world = context.worldBuilder().create()) {
             world.getServer().runOnServer(server -> {
-                var player = world.getConnection().getServerPlayer();
+                var player = server.getPlayerList().getPlayers().getFirst();
                 player.getInventory().setItem(0, new ItemStack(Items.SPYGLASS));
                 player.getInventory().setItem(1, new ItemStack(Items.STONE));
                 player.getInventory().setSelectedSlot(0);
@@ -29,7 +30,7 @@ public final class SpyglassClientGameTest implements FabricClientGameTest {
                     }
                 }
             });
-            world.getConnection().waitForClientboundPackets();
+            sync(context, world);
             context.runOnClient(client -> {
                 client.player.getInventory().setSelectedSlot(0);
                 client.player.setYRot(0);
@@ -38,7 +39,7 @@ public final class SpyglassClientGameTest implements FabricClientGameTest {
             context.getInput().holdMouse(InputConstants.MOUSE_BUTTON_RIGHT);
             context.waitFor(client -> client.player.isScoping());
             settle(context);
-            float defaultFov = context.computeOnClient(client -> client.gameRenderer.mainCamera().getFov());
+            float defaultFov = context.computeOnClient(client -> fov(client));
             context.takeScreenshot("spyglass-default");
             context.getInput().scroll(2);
             settle(context);
@@ -79,14 +80,14 @@ public final class SpyglassClientGameTest implements FabricClientGameTest {
             context.getInput().scroll(-1);
             context.waitFor(client -> client.player.getInventory().getSelectedSlot() == 1);
 
-            world.getConnection().waitForServerboundPackets();
+            sync(context, world);
             world.getServer().runOnServer(server -> {
-                var player = world.getConnection().getServerPlayer();
+                var player = server.getPlayerList().getPlayers().getFirst();
                 player.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.SPYGLASS));
                 player.getInventory().setItem(1, ItemStack.EMPTY);
                 player.inventoryMenu.broadcastChanges();
             });
-            world.getConnection().waitForClientboundPackets();
+            sync(context, world);
             context.getInput().holdMouse(InputConstants.MOUSE_BUTTON_RIGHT);
             context.waitFor(client -> client.player.isScoping());
             context.getInput().scroll(1);
@@ -104,9 +105,21 @@ public final class SpyglassClientGameTest implements FabricClientGameTest {
         for (int i = 0; i < 20; i++) context.waitTick();
     }
 
+    private static float fov(Minecraft client) {
+        //? if >=26.1 {
+        return client.gameRenderer.mainCamera().getFov();
+        //?} else {
+        /*try {
+            var method = net.minecraft.client.renderer.GameRenderer.class.getDeclaredMethod("getFov", net.minecraft.client.Camera.class, float.class, boolean.class);
+            method.setAccessible(true);
+            return (float) method.invoke(client.gameRenderer, client.gameRenderer.getMainCamera(), 1.0F, true);
+        } catch (ReflectiveOperationException e) { throw new AssertionError(e); }
+        *///?}
+    }
+
     private static void checkFov(ClientGameTestContext context, float expected) {
         context.runOnClient(client -> {
-            float actual = client.gameRenderer.mainCamera().getFov();
+            float actual = fov(client);
             check(Math.abs(actual - expected) < 0.05F, "Expected FOV " + expected + ", got " + actual);
         });
     }
@@ -116,6 +129,15 @@ public final class SpyglassClientGameTest implements FabricClientGameTest {
             double actual = SpyglassScroll.sensitivity();
             check(Math.abs(actual - expected) < 1.0E-6, "Expected sensitivity " + expected + ", got " + actual);
         });
+    }
+
+    private static void sync(ClientGameTestContext context, TestSingleplayerContext world) {
+        //? if >=26.2 {
+        world.getConnection().waitForServerboundPackets();
+        world.getConnection().waitForClientboundPackets();
+        //?} else {
+        /*context.waitTicks(2);
+        *///?}
     }
 
     private static void check(boolean condition, String message) {

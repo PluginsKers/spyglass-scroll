@@ -1,14 +1,22 @@
 package spyglassscroll.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+//? if >=26.1 {
 import net.minecraft.client.Camera;
+//?} else {
+/*import net.minecraft.client.renderer.GameRenderer;
+*///?}
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import spyglassscroll.SpyglassScroll;
 
+//? if >=26.1 {
 @Mixin(Camera.class)
+//?} else {
+/*@Mixin(GameRenderer.class)
+*///?}
 public abstract class CameraMixin {
     @ModifyExpressionValue(method = "tickFov", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/player/AbstractClientPlayer;getFieldOfViewModifier(ZF)F"))

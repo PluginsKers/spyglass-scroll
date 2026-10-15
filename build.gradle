@@ -1,11 +1,28 @@
 plugins {
-    id 'net.fabricmc.fabric-loom' version "${loom_version}"
+    id 'net.fabricmc.fabric-loom' version '1.16.3' apply false
+    id 'net.fabricmc.fabric-loom-remap' version '1.16.3' apply false
 }
 
-version = project.mod_version
+def remapped = stonecutter.eval(stonecutter.current.version, '<26.1')
+apply plugin: remapped ? 'net.fabricmc.fabric-loom-remap' : 'net.fabricmc.fabric-loom'
+
+def minecraftVersion = stonecutter.current.version
+def javaVersion = remapped ? 21 : 25
+version = "${mod_version}+mc${minecraftVersion}"
 group = project.maven_group
+base { archivesName = 'spyglass-scroll' }
 
 repositories { mavenCentral() }
+
+stonecutter.replacements {
+    string(remapped) {
+        replace('GuiGraphicsExtractor', 'GuiGraphics')
+        replace('graphics.text(', 'graphics.drawString(')
+    }
+    string(stonecutter.eval(minecraftVersion, '<26.2')) {
+        replace('.mainCamera()', '.getMainCamera()')
+    }
+}
 
 loom {
     splitEnvironmentSourceSets()
@@ -27,21 +44,24 @@ fabricApi {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    minecraft "com.mojang:minecraft:${minecraftVersion}"
+    if (remapped) mappings loom.officialMojangMappings()
+    add(remapped ? 'modImplementation' : 'implementation', "net.fabricmc:fabric-loader:${loader_version}")
+    add(remapped ? 'modImplementation' : 'implementation', "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}")
 }
 
-processResources {
-    inputs.property 'version', project.version
-    filesMatching('fabric.mod.json') { expand 'version': project.version }
+tasks.withType(ProcessResources).configureEach {
+    inputs.properties(version: project.version, minecraft: minecraftVersion, java: javaVersion)
+    filesMatching('fabric.mod.json') {
+        expand(version: project.version, minecraft: minecraftVersion, java: javaVersion)
+    }
+    filesMatching('*.mixins.json') { expand(java: javaVersion) }
 }
 
 java {
     withSourcesJar()
-    toolchain.languageVersion = JavaLanguageVersion.of(25)
+    toolchain.languageVersion = JavaLanguageVersion.of(javaVersion)
 }
 
-tasks.withType(JavaCompile).configureEach { options.release = 25 }
-
-jar { from('LICENSE') { rename { 'LICENSE_spyglass-scroll' } } }
+tasks.withType(JavaCompile).configureEach { options.release = javaVersion }
+jar { from(rootProject.file('LICENSE')) { rename { 'LICENSE_spyglass-scroll' } } }
