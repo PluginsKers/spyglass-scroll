@@ -10,6 +10,7 @@
     "issues": "https://github.com/PluginsKers/spyglass-scroll/issues"
   },
   "license": "MIT",
+  "icon": "assets/spyglass-scroll/icon.png",
   "environment": "client",
   "entrypoints": { "client": ["spyglassscroll.SpyglassScroll"] },
   "mixins": [{ "config": "spyglass-scroll.client.mixins.json", "environment": "client" }],

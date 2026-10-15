@@ -1,3 +1,5 @@
+![Spyglass Scroll](assets/banner.png)
+
 # Spyglass Scroll
 
 Scroll to zoom while using a spyglass. Works in either hand, with no server mod required.
@@ -21,3 +23,5 @@ Use `gradlew.bat` on Windows. Builds require JDK 25; game tests also require a d
 ## License
 
 [MIT](LICENSE).
+
+The logo and banner use Minecraft artwork by Mojang Studios.
