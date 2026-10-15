@@ -8,6 +8,7 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 
 public final class SpyglassClientGameTest implements FabricClientGameTest {
     @Override
@@ -20,9 +21,20 @@ public final class SpyglassClientGameTest implements FabricClientGameTest {
                 player.getInventory().setItem(1, new ItemStack(Items.STONE));
                 player.getInventory().setSelectedSlot(0);
                 player.inventoryMenu.broadcastChanges();
+                var target = player.blockPosition().offset(0, 0, 32);
+                for (int x = -3; x <= 3; x++) {
+                    for (int y = 0; y < 7; y++) {
+                        player.level().setBlockAndUpdate(target.offset(x, y, 0),
+                                (x == 0 ? Blocks.CHISELED_STONE_BRICKS : Blocks.STONE_BRICKS).defaultBlockState());
+                    }
+                }
             });
             world.getConnection().waitForClientboundPackets();
-            context.runOnClient(client -> client.player.getInventory().setSelectedSlot(0));
+            context.runOnClient(client -> {
+                client.player.getInventory().setSelectedSlot(0);
+                client.player.setYRot(0);
+                client.player.setXRot(0);
+            });
             context.getInput().holdMouse(InputConstants.MOUSE_BUTTON_RIGHT);
             context.waitFor(client -> client.player.isScoping());
             settle(context);
