@@ -1,30 +1,23 @@
 # Spyglass Scroll
 
-望远镜滚轮变焦模组，适用于 Minecraft 26.3.x 和 Fabric。
+Scroll to zoom while using a spyglass. Works in either hand, with no server mod required.
 
-第一人称使用望远镜时，向上滚动放大，向下滚动缩小。每格调整 1.25 倍，视角倍率范围约为 2 倍至 50 倍，每次开镜从原版 10 倍开始。主手和副手均可使用。开镜时屏幕右下角显示滚轮缩放提示。
+Scroll up to zoom in and down to zoom out. Each step changes magnification by 1.25×, from 2× to 50×. Every use starts at the vanilla 10× zoom. Mouse sensitivity follows magnification; vanilla transitions and scroll sensitivity are preserved.
 
-视角灵敏度与倍率成反比，10 倍时与原版相同，平滑镜头下只在超过 10 倍后降低。
+## Installation
 
-缩放沿用原版视野过渡及滚轮灵敏度设置。开镜时滚轮不切换快捷栏，关镜后恢复原版行为。无需安装服务端模组。
+Requires Minecraft 26.3.x, Fabric Loader 0.19.5 or newer, Fabric API, and Java 25.
+Place the mod jar in your client's `mods` folder.
 
-## 安装
+## Building
 
-需要 Minecraft 26.3.x、Fabric Loader 0.19.5 或更新版本、对应版本 Fabric API，以及 Java 25 或更新版本。
-
-将 `spyglass-scroll-*.jar` 放入客户端 `mods` 目录并重启游戏。不要安装 `-sources.jar`。
-
-## 构建
-
-使用 JDK 25：
-
-```powershell
-.\gradlew.bat build
-.\gradlew.bat runClientGameTest
+```sh
+./gradlew build
+./gradlew runClientGameTest
 ```
 
-Linux 或 macOS 使用 `./gradlew`。产物位于 `build/libs/`，游戏测试需要图形界面。
+Use `gradlew.bat` on Windows. Builds require JDK 25; game tests also require a display. Jars are written to `build/libs`.
 
-## 许可
+## License
 
-[MIT](LICENSE)，作者 PluginsKers。
+[MIT](LICENSE).
