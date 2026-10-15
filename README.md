@@ -4,6 +4,10 @@
 
 Scroll to zoom while using a spyglass. Works in either hand, with no server mod required.
 
+[![A distant stone wall seen through a spyglass](assets/screenshot.png)](https://youtu.be/8tlVviQIKaw)
+
+[Watch the demo on YouTube](https://youtu.be/8tlVviQIKaw).
+
 Scroll up to zoom in and down to zoom out. Each step changes magnification by 1.25×, from 2× to 50×. Every use starts at the vanilla 10× zoom. Mouse sensitivity follows magnification; vanilla transitions and scroll sensitivity are preserved.
 
 ## Installation
