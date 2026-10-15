@@ -1,3 +1,5 @@
+![Spyglass Scroll](artwork/banner.png)
+
 # Spyglass Scroll
 
 Scroll to zoom while using a spyglass. Works in either hand, with no server mod required.
