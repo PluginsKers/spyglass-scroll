@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.Blocks;
 public final class SpyglassClientGameTest implements FabricClientGameTest {
     @Override
     public void runTest(ClientGameTestContext context) {
+        context.runOnClient(client -> client.options.menuBackgroundBlurriness().set(0));
         context.getInput().resizeWindow(1280, 720);
         try (var world = context.worldBuilder().create()) {
             world.getServer().runOnServer(server -> {
