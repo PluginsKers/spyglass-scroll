@@ -19,9 +19,6 @@ stonecutter.replacements {
         replace('GuiGraphicsExtractor', 'GuiGraphics')
         replace('graphics.text(', 'graphics.drawString(')
     }
-    string(stonecutter.eval(minecraftVersion, '<26.2')) {
-        replace('.mainCamera()', '.getMainCamera()')
-    }
 }
 
 loom {
@@ -31,15 +28,6 @@ loom {
             sourceSet sourceSets.main
             sourceSet sourceSets.client
         }
-    }
-}
-
-fabricApi {
-    configureTests {
-        createSourceSet = true
-        modId = 'spyglass-scroll-test'
-        enableGameTests = false
-        enableClientGameTests = true
     }
 }
 
