@@ -8,7 +8,7 @@ Scroll to zoom while using a spyglass. Works in either hand, with no server mod 
 
 [Watch the demo on YouTube](https://youtu.be/8tlVviQIKaw).
 
-Scroll up to zoom in and down to zoom out. Each step changes magnification by 1.25×, from 2× to 50×. Every use starts at the vanilla 10× zoom. Mouse sensitivity follows magnification; vanilla transitions and scroll sensitivity are preserved.
+Scroll up to zoom in and down to zoom out. Each step changes magnification by 1.25×, from 2× to 50×. Zoom starts at the vanilla 10× and is remembered between uses, even after restarting the game. Mouse sensitivity follows magnification; vanilla transitions and scroll sensitivity are preserved.
 
 ## Installation
 
