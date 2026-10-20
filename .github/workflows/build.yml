@@ -7,6 +7,14 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      release:
+        description: Publish a release of mod_version from main
+        type: boolean
+        default: false
+      notes:
+        description: Release notes (generated from pull requests if empty)
+        type: string
 
 permissions:
   contents: read
@@ -35,7 +43,7 @@ jobs:
             !versions/${{ matrix.minecraft }}/build/libs/*-sources.jar
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || (inputs.release && github.ref == 'refs/heads/main')
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -52,5 +60,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           TAG: ${{ github.ref_name }}
+          NOTES: ${{ inputs.notes }}
         run: |
-          gh release create "$TAG" dist/*.jar --verify-tag --title "$TAG" --generate-notes
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            gh release create "$TAG" dist/*.jar --verify-tag --title "$TAG" --generate-notes
+          else
+            # Manual run: tag the current commit with the version that was built.
+            TAG=v$(sed -n 's/^mod_version=//p' gradle.properties)
+            if [[ -n $NOTES ]]; then notes=(--notes "$NOTES"); else notes=(--generate-notes); fi
+            gh release create "$TAG" dist/*.jar --target "$GITHUB_SHA" --title "$TAG" "${notes[@]}"
+          fi
